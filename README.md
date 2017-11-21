@@ -7,8 +7,29 @@ Instantly turn custom functions into HTTP endpoints
 
 [![codecov.io](http://codecov.io/github/mbesancon/WebFunc.jl/coverage.svg?branch=master)](http://codecov.io/github/mbesancon/WebFunc.jl?branch=master)
 
-
 ## Usage
+
+### With `Dict` input
+
+```julia
+> import WebFunc
+> m = WebFunc.Mapping()
+# Dict{Base.Random.UUID,WebFunc.Lambda} with 0 entries
+> f = input -> input["a"] * 2
+(::#1) (generic function with 1 method)
+> WebFunc.expose!(m,f)
+# 35729b69-43e6-470d-86c2-ee00f1222a4d
+WebFunc.serve(m, 8080)
+# Listening on 0.0.0.0:8080...
+```
+
+In another terminal:
+```bash
+$ curl -X POST http://localhost:8080/35729b69-43e6-470d-86c2-ee00f1222a4d -d "{\"a\": 42}"
+{"result":84}
+```
+
+## Structure
 
 The main object is `Mapping`, associating a unique identifier (UUID) to a function.
 When launching the server, each function is exposed at host/function_id.

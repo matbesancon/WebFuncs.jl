@@ -16,7 +16,7 @@ end
 
 Mapping = Dict{Random.UUID,Lambda}
 
-function expose!(map::Mapping, func::Function, input_type::DataType)
+function expose!(map::Mapping, func::Function, input_type::DataType=Dict{AbstractString,Any})
     key = Random.uuid4()
     map[key] = Lambda(func, input_type)
     key
@@ -48,9 +48,8 @@ end
 function handle(map::Mapping)
     # dispatches the request with parsed req body to corresponding Lambda
     HttpHandler() do req::Request, res::Response
-        println("FUNCID: $(split(req.resource,'/'))")
         func_id = Random.UUID(split(req.resource,'/')[2])
-        if !(func_id in map.mapping)
+        if !(func_id in keys(map))
             Response(400)
         else
             lambda = map[func_id]
