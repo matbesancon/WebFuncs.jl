@@ -41,7 +41,7 @@ function parse_input(data::Vector{UInt8},DT::DataType=Dict{AbstractString,Any})
 	if DT <: Dict
 		parsed_dict
 	else
-		Unmarshal.unmarshal(DT, parsed_data)
+		Unmarshal.unmarshal(DT, parsed_dict)
 	end
 end
 

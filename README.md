@@ -29,6 +29,36 @@ $ curl -X POST http://localhost:8080/35729b69-43e6-470d-86c2-ee00f1222a4d -d "{\
 {"result":84}
 ```
 
+### With a custom `struct`
+
+```julia
+import WebFunc
+
+struct Language
+	name::String
+end
+
+is_awesome = function(l::Language)
+	l.name == "Julia" ? "Yep" : "We'll see about that"
+end
+
+m = WebFunc.Mapping()
+# Giving the expected input type to convert incoming JSON data
+WebFunc.expose!(m,is_awesome,Language)
+# 4fbff4f3-27b4-4e86-b02f-a82f0aba3eda
+WebFunc.serve(m, 8080)
+```
+
+On the client bash:
+```bash
+$ curl -X POST http://localhost:8080/4fbff4f3-27b4-4e86-b02f-a82f0aba3eda -d "{\"name\": \"Fortran\"}"
+{"result":"We'll see about that"}
+
+$ curl -X POST http://localhost:8080/4fbff4f3-27b4-4e86-b02f-a82f0aba3eda -d "{\"name\": \"Julia\"}"
+{"result":"Yep"}
+```
+
+
 ## Structure
 
 The main object is `Mapping`, associating a unique identifier (UUID) to a function.
