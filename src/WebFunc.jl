@@ -22,7 +22,7 @@ function expose!(map::Mapping, func::Function, input_type::DataType)
     key
 end
 
-function expose!(map::Mapping, funcs::Vector{Function}, input_types::Vector{DataType})
+function expose!(map::Mapping, funcs::Vector{<:Function}, input_types::Vector{DataType})
     func_keys = [Random.uuid4() for _ in 1:length(funcs)]
     for (k, f, t) in zip(func_keys, funcs, input_types)
         map[k] = Lambda(f, t)
@@ -30,7 +30,7 @@ function expose!(map::Mapping, funcs::Vector{Function}, input_types::Vector{Data
     func_keys
 end
 
-function expose!(map::Mapping,funcs::Vector{Function}, input_type::DataType)
+function expose!(map::Mapping,funcs::Vector{<:Function}, input_type::DataType)
     input_type_copy = [input_type for _ in 1:length(funcs)]
     expose!(map, funcs, input_type_copy)
 end
