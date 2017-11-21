@@ -30,15 +30,19 @@ function expose!(map::Mapping, funcs::Vector{<:Function}, input_types::Vector{Da
     func_keys
 end
 
-function expose!(map::Mapping,funcs::Vector{<:Function}, input_type::DataType)
+function expose!(map::Mapping,funcs::Vector{<:Function}, input_type::DataType=Dict{AbstractString,Any})
     input_type_copy = [input_type for _ in 1:length(funcs)]
     expose!(map, funcs, input_type_copy)
 end
 
 
-function parse_input(DT::DataType, data::Vector{UInt8})
-    parsed_data = JSON.Parser.parse(join([Char(v) for v in data]))
-    Unmarshal.unmarshal(DT, parsed_data)
+function parse_input(data::Vector{UInt8},DT::DataType=Dict{AbstractString,Any})
+    parsed_dict = JSON.Parser.parse(join([Char(v) for v in data]))
+	if DT <: Dict
+		parsed_dict
+	else
+		Unmarshal.unmarshal(DT, parsed_data)
+	end
 end
 
 function handle(map::Mapping)
@@ -49,7 +53,7 @@ function handle(map::Mapping)
             Response(400)
         else
             lambda = map[func_id]
-            input = parse_input(lambda.Input, req.data)
+            input = parse_input(req.data, lambda.Input)
             result = Dict(["result" => lambda.func(input)])
             Response(200, JSON.json(result))
         end
