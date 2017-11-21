@@ -48,7 +48,8 @@ end
 function handle(map::Mapping)
     # dispatches the request with parsed req body to corresponding Lambda
     HttpHandler() do req::Request, res::Response
-        func_id = Random.UUID(split(req.resource,'/')[1])
+        println("FUNCID: $(split(req.resource,'/'))")
+        func_id = Random.UUID(split(req.resource,'/')[2])
         if !(func_id in map.mapping)
             Response(400)
         else
@@ -66,7 +67,7 @@ function serve(map::Mapping, port::Int)
 end
 
 function serve(map::Mapping)
-    run(map,default_port)
+    serve(map,default_port)
 end
 
 end
