@@ -49,7 +49,12 @@ function handle(map::Mapping)
     # dispatches the request with parsed req body to corresponding Lambda
     HttpHandler() do req::Request, res::Response
         func_id = Random.UUID(split(req.resource,'/')[2])
-        if !(func_id in keys(map))
+        if func_id == "list"
+            ids = collect(keys(map))
+            Response(200, JSON.json(
+                Dict("ids" => ids)
+            ))
+        elseif !(func_id in keys(map))
             Response(400)
         else
             lambda = map[func_id]
