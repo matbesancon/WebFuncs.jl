@@ -48,14 +48,18 @@ end
 function handle(map::Mapping)
     # dispatches the request with parsed req body to corresponding Lambda
     HttpHandler() do req::Request, res::Response
-        func_id = Random.UUID(split(req.resource,'/')[2])
-        if func_id == "list"
-            ids = collect(keys(map))
-            Response(200, JSON.json(
+    	path = split(req.resource,'/')[2]
+        if contains(path, "list")
+            ids = [string(u) for u in keys(map)]
+            return Response(200, JSON.json(
                 Dict("ids" => ids)
-            ))
-        elseif !(func_id in keys(map))
-            Response(400)
+            ));
+        elseif length(path) == 0
+			return Response(200, "Response served by WebFuncs.jl");
+		end
+        func_id = Random.UUID(split(req.resource,'/')[2])
+        if !(func_id in keys(map))
+            Response(400);
         else
             lambda = map[func_id]
             input = parse_input(req.data, lambda.Input)
