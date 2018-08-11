@@ -2,10 +2,11 @@ module WebFuncs
 
 export Mapping, expose!, serve, default_port
 
-using HTTP
+import HTTP
 import JSON
 import Unmarshal
 import UUIDs
+using Sockets: localhost
 
 const default_port = 3000
 
@@ -14,7 +15,7 @@ struct Lambda
     Input::DataType
 end
 
-Mapping = Dict{UUIDs.UUID,Lambda}
+const Mapping = Dict{UUIDs.UUID,Lambda}
 
 function expose!(map::Mapping, func::Function, input_type::DataType=Dict{AbstractString,Any})
     key = UUIDs.uuid4()
@@ -45,27 +46,25 @@ function parse_input(data::Vector{UInt8},DT::DataType=Dict{AbstractString,Any})
 	end
 end
 
-function handle(map::Mapping)
+function run(map::Mapping, port::Int = default_port)
     # dispatches the request with parsed req body to corresponding Lambda
-    HTTP.listen() do request::HTTP.Request
-        func_id = UUIDs.UUID(split(req.resource,'/')[2])
+    function handler(req::HTTP.Request,res::HTTP.Response)
+        println("Got there")
+        split_res = split(req.resource,'/')
+        if length(split_res) <= 1
+            return HTTP.Response(200, "Hello")
+        end
         if !(func_id in keys(map))
             return HTTP.Response(400)
+            func_id = UUIDs.UUID(split_res[2])
         end
         lambda = map[func_id]
         input = parse_input(req.data, lambda.Input)
         result = Dict(["result" => lambda.func(input)])
-        HTTP.Response(200, JSON.json(result))
+        return HTTP.Response(200, JSON.json(result))
     end
-end
-
-function serve(map::Mapping, port::Int)
-    srv = Server(handle(map))
-    run(srv, port)
-end
-
-function serve(map::Mapping)
-    serve(map,default_port)
+    server = HTTP.Server(handler)
+    HTTP.serve(server, localhost, port)
 end
 
 end

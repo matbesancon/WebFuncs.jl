@@ -1,23 +1,21 @@
 # WebFuncs
 Instantly turn custom functions into HTTP endpoints
 
-[![Build Status](https://travis-ci.org/mbesancon/WebFuncs.jl.svg?branch=master)](https://travis-ci.org/mbesancon/WebFuncs.jl)
+[![Build Status](https://travis-ci.org/matbesancon/WebFuncs.jl.svg?branch=master)](https://travis-ci.org/matbesancon/WebFuncs.jl)
 
-[![Coverage Status](https://coveralls.io/repos/github/mbesancon/WebFuncs.jl/badge.svg?branch=master)](https://coveralls.io/github/mbesancon/WebFuncs.jl?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/matbesancon/WebFuncs.jl/badge.svg?branch=master)](https://coveralls.io/github/matbesancon/WebFuncs.jl?branch=master)
 
-[![codecov.io](http://codecov.io/github/mbesancon/WebFuncs.jl/coverage.svg?branch=master)](http://codecov.io/github/mbesancon/WebFuncs.jl?branch=master)
+[![codecov.io](http://codecov.io/github/matbesancon/WebFuncs.jl/coverage.svg?branch=master)](http://codecov.io/github/matbesancon/WebFuncs.jl?branch=master)
 
 ## Usage
 
 ### With `Dict` input
 
 ```julia
-> import WebFuncs
-> m = WebFuncs.Mapping()
-# Dict{Base.Random.UUID,WebFuncs.Lambda} with 0 entries
-> f = input -> input["a"] * 2
-(::#1) (generic function with 1 method)
-> WebFuncs.expose!(m,f)
+import WebFuncs
+m = WebFuncs.Mapping()
+f = input -> input["a"] * 2
+WebFuncs.expose!(m,f)
 # 35729b69-43e6-470d-86c2-ee00f1222a4d
 WebFuncs.serve(m, 8080)
 # Listening on 0.0.0.0:8080...
@@ -34,17 +32,21 @@ $ curl -X POST http://localhost:8080/35729b69-43e6-470d-86c2-ee00f1222a4d -d "{\
 ```julia
 import WebFuncs
 
-struct Language
-	name::String
+struct Message
+	info::String
+	code::Int
 end
 
-is_awesome = function(l::Language)
-	l.name == "Julia" ? "Yep" : "We'll see about that"
+function process(m::Message)
+	if m.code == 42
+		return "The answer"
+	end
+	return m.info
 end
 
 m = WebFuncs.Mapping()
 # Giving the expected input type to convert incoming JSON data
-WebFuncs.expose!(m,is_awesome,Language)
+WebFuncs.expose!(m,process,Message)
 # 4fbff4f3-27b4-4e86-b02f-a82f0aba3eda
 WebFuncs.serve(m, 8080)
 ```
