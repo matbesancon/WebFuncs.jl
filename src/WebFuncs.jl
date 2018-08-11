@@ -31,11 +31,10 @@ function expose!(m::Mapping, funcs::Vector{<:Function}, input_types::Vector{Data
     func_keys
 end
 
-function expose!(m::Mapping,funcs::Vector{<:Function}, input_type::DataType=Dict{AbstractString,Any})
-    input_type_copy = [input_type for _ in 1:length(funcs)]
-    expose!(m, funcs, input_type_copy)
+function expose!(m::Mapping, funcs::Vector{<:Function}, input_type::DataType=Dict{AbstractString,Any})
+    type_vec = [input_type for _ in 1:length(funcs)]
+    expose!(m, funcs, type_vec)
 end
-
 
 function parse_input(data::Vector{UInt8},DT::DataType=Dict{AbstractString,Any})
     parsed_dict = JSON.Parser.parse(join([Char(v) for v in data]))
@@ -54,7 +53,6 @@ function run(m::Mapping, port::Int = default_port)
     end
     HTTP.register!(r, string(localhost), req::HTTP.Request -> HTTP.Response(200, "Hello WebFuncs"))
     server = HTTP.Server(r)
-    println("got there")
     HTTP.serve(server, localhost, port, verbose = true)
 end
 
