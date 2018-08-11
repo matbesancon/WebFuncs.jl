@@ -2,10 +2,10 @@ module WebFuncs
 
 export Mapping, expose!, serve, default_port
 
-using HttpServer
+using HTTP
 import JSON
 import Unmarshal
-import Base.Random
+import UUIDs
 
 const default_port = 3000
 
@@ -14,16 +14,16 @@ struct Lambda
     Input::DataType
 end
 
-Mapping = Dict{Random.UUID,Lambda}
+Mapping = Dict{UUIDs.UUID,Lambda}
 
 function expose!(map::Mapping, func::Function, input_type::DataType=Dict{AbstractString,Any})
-    key = Random.uuid4()
+    key = UUIDs.uuid4()
     map[key] = Lambda(func, input_type)
     key
 end
 
 function expose!(map::Mapping, funcs::Vector{<:Function}, input_types::Vector{DataType})
-    func_keys = [Random.uuid4() for _ in 1:length(funcs)]
+    func_keys = [UUIDs.uuid4() for _ in 1:length(funcs)]
     for (k, f, t) in zip(func_keys, funcs, input_types)
         map[k] = Lambda(f, t)
     end
@@ -47,16 +47,15 @@ end
 
 function handle(map::Mapping)
     # dispatches the request with parsed req body to corresponding Lambda
-    HttpHandler() do req::Request, res::Response
-        func_id = Random.UUID(split(req.resource,'/')[2])
+    HTTP.listen() do request::HTTP.Request
+        func_id = UUIDs.UUID(split(req.resource,'/')[2])
         if !(func_id in keys(map))
-            Response(400)
-        else
-            lambda = map[func_id]
-            input = parse_input(req.data, lambda.Input)
-            result = Dict(["result" => lambda.func(input)])
-            Response(200, JSON.json(result))
+            return HTTP.Response(400)
         end
+        lambda = map[func_id]
+        input = parse_input(req.data, lambda.Input)
+        result = Dict(["result" => lambda.func(input)])
+        HTTP.Response(200, JSON.json(result))
     end
 end
 

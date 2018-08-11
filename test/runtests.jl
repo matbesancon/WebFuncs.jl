@@ -1,5 +1,6 @@
 import WebFuncs
-using Base.Test
+import UUIDs
+using Test
 
 f = d -> sqrt(d["a"])
 f1 = d -> d["a"] * d["a"]
@@ -12,7 +13,7 @@ test_input = Dict("a" => 4)
 
 m = WebFuncs.Mapping()
 u = WebFuncs.expose!(m, f, Dict{String,Number})
-@test Base.Random.uuid_version(u) == 4
+@test UUIDs.uuid_version(u) == 4
 @test length(m) == 1
 
 multi_func_map = WebFuncs.Mapping()
