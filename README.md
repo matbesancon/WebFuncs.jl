@@ -48,7 +48,7 @@ m = WebFuncs.Mapping()
 # Giving the expected input type to convert incoming JSON data
 WebFuncs.expose!(m,process,Message)
 # 4fbff4f3-27b4-4e86-b02f-a82f0aba3eda
-WebFuncs.serve(m, 8080)
+WebFuncs.run(m, 8080)
 ```
 
 On the client bash:
